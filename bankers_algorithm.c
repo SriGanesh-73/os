@@ -87,7 +87,7 @@ bool isSafe(int processes, int resources, int allocation[][resources], int need[
 
     printf("\nThe system is in a safe state.\nSafe Sequence: ");
     for (int i = 0; i < processes; i++) {
-        printf("%d ", safeSequence[i]);
+        printf("P%d ", safeSequence[i]);
     }
     printf("\n");
     return true;
