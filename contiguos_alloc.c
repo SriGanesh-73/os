@@ -1,18 +1,20 @@
-#include <iostream>
-#include <vector>
+#include <stdio.h>
+#include <stdlib.h>
 
-void contiguousAllocation(std::vector<int>& memory, int start, int size) {
+void contiguousAllocation(int memory[], int start, int size) {
     for (int i = start; i < start + size; i++) {
-        memory[i] = 1;  // Allocate
+        memory[i] = 1;
     }
 }
 
 int main() {
-    std::vector<int> memory(100, 0); // Simulated memory
+    int memory[100] = {0}; // Simulated memory
     contiguousAllocation(memory, 10, 5); // Allocating 5 units starting at index 10
-    for (int i = 0; i < memory.size(); i++) {
-        std::cout << memory[i] << " ";
+
+    for (int i = 0; i < 100; i++) {
+        printf("%d ", memory[i]);
     }
+
     return 0;
 }
 
