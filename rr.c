@@ -1,68 +1,59 @@
 #include <stdio.h>
+#include <stdbool.h>
 
-void findWaitingTime(int n, int bt[], int wt[], int quantum) {
-    int rem_bt[n];
-    for (int i = 0; i < n; i++) {
-        rem_bt[i] = bt[i];
-    }
+void findRoundRobin(int n, int bt[], int quantum, int tat[], int wt[]) {
+    int remaining_bt[n], t = 0, i;
+    for (i = 0; i < n; i++) remaining_bt[i] = bt[i];
+    bool done;
 
-    int time = 0;
-    while (1) {
-        int done = 1;
-        for (int i = 0; i < n; i++) {
-            if (rem_bt[i] > 0) {
-                done = 0;
-                if (rem_bt[i] > quantum) {
-                    time += quantum;
-                    rem_bt[i] -= quantum;
+    while (true) {
+        done = true;
+        for (i = 0; i < n; i++) {
+            if (remaining_bt[i] > 0) {
+                done = false;
+                if (remaining_bt[i] > quantum) {
+                    t += quantum;
+                    remaining_bt[i] -= quantum;
                 } else {
-                    time += rem_bt[i];
-                    wt[i] = time - bt[i];
-                    rem_bt[i] = 0;
+                    t += remaining_bt[i];
+                    wt[i] = t - bt[i];
+                    remaining_bt[i] = 0;
                 }
             }
         }
         if (done) break;
     }
+    for (i = 0; i < n; i++) tat[i] = bt[i] + wt[i];
 }
 
-void findTurnAroundTime(int n, int bt[], int wt[], int tat[]) {
-    for (int i = 0; i < n; i++) {
-        tat[i] = bt[i] + wt[i];
-    }
-}
-
-void findAverageTime(int n, int bt[], int quantum) {
-    int wt[n], tat[n];
-    findWaitingTime(n, bt, wt, quantum);
-    findTurnAroundTime(n, bt, wt, tat);
-
-    int total_wt = 0, total_tat = 0;
-    for (int i = 0; i < n; i++) {
-        total_wt += wt[i];
+void displayResults(int n, int tat[], int wt[]) {
+    int total_tat = 0, total_wt = 0, i;
+    printf("Process\tTurnaround Time\tWaiting Time\n");
+    for (i = 0; i < n; i++) {
+        printf("%d\t%d\t\t%d\n", i + 1, tat[i], wt[i]);
         total_tat += tat[i];
+        total_wt += wt[i];
     }
-
-    printf("Average Waiting Time: %.2f\n", (float)total_wt / n);
     printf("Average Turnaround Time: %.2f\n", (float)total_tat / n);
+    printf("Average Waiting Time: %.2f\n", (float)total_wt / n);
 }
 
 int main() {
-    int n, quantum;
+    int n, quantum, i;
     printf("Enter the number of processes: ");
     scanf("%d", &n);
 
-    int bt[n];
-    printf("Enter burst times:\n");
-    for (int i = 0; i < n; i++) {
-        printf("Process %d: ", i + 1);
-        scanf("%d", &bt[i]);
-    }
+    int burst_time[n], tat[n], wt[n];
 
-    printf("Enter time quantum: ");
+    printf("Enter burst times for %d processes: ", n);
+    for (i = 0; i < n; i++) scanf("%d", &burst_time[i]);
+
+    printf("Enter time quantum for Round Robin: ");
     scanf("%d", &quantum);
 
-    findAverageTime(n, bt, quantum);
+    findRoundRobin(n, burst_time, quantum, tat, wt);
+    displayResults(n, tat, wt);
+
     return 0;
 }
 

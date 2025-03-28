@@ -1,63 +1,54 @@
 #include <stdio.h>
 
-void findWaitingTime(int n, int bt[], int wt[], int pr[]) {
-    int temp, temp_bt, temp_pr;
-    for (int i = 0; i < n - 1; i++) {
-        for (int j = i + 1; j < n; j++) {
-            if (pr[i] > pr[j]) {
-                temp_pr = pr[i];
-                pr[i] = pr[j];
-                pr[j] = temp_pr;
-                
-                temp_bt = bt[i];
-                bt[i] = bt[j];
-                bt[j] = temp_bt;
+void findPriorityScheduling(int n, int bt[], int priority[], int tat[], int wt[]) {
+    int i, j, temp;
+    int p[n];
+
+    for (i = 0; i < n; i++) p[i] = i;
+
+    for (i = 0; i < n - 1; i++) {
+        for (j = i + 1; j < n; j++) {
+            if (priority[i] > priority[j]) {
+                temp = priority[i]; priority[i] = priority[j]; priority[j] = temp;
+                temp = bt[i]; bt[i] = bt[j]; bt[j] = temp;
+                temp = p[i]; p[i] = p[j]; p[j] = temp;
             }
         }
     }
 
     wt[0] = 0;
-    for (int i = 1; i < n; i++) {
-        wt[i] = bt[i - 1] + wt[i - 1];
-    }
+    for (i = 1; i < n; i++) wt[i] = wt[i - 1] + bt[i - 1];
+    for (i = 0; i < n; i++) tat[i] = bt[i] + wt[i];
 }
 
-void findTurnAroundTime(int n, int bt[], int wt[], int tat[]) {
-    for (int i = 0; i < n; i++) {
-        tat[i] = bt[i] + wt[i];
-    }
-}
-
-void findAverageTime(int n, int bt[], int pr[]) {
-    int wt[n], tat[n];
-    findWaitingTime(n, bt, wt, pr);
-    findTurnAroundTime(n, bt, wt, tat);
-
-    int total_wt = 0, total_tat = 0;
-    for (int i = 0; i < n; i++) {
-        total_wt += wt[i];
+void displayResults(int n, int tat[], int wt[]) {
+    int total_tat = 0, total_wt = 0, i;
+    printf("Process\tTurnaround Time\tWaiting Time\n");
+    for (i = 0; i < n; i++) {
+        printf("%d\t%d\t\t%d\n", i + 1, tat[i], wt[i]);
         total_tat += tat[i];
+        total_wt += wt[i];
     }
-
-    printf("Average Waiting Time: %.2f\n", (float)total_wt / n);
     printf("Average Turnaround Time: %.2f\n", (float)total_tat / n);
+    printf("Average Waiting Time: %.2f\n", (float)total_wt / n);
 }
 
 int main() {
-    int n;
+    int n, i;
     printf("Enter the number of processes: ");
     scanf("%d", &n);
 
-    int bt[n], pr[n];
-    printf("Enter burst times and priorities:\n");
-    for (int i = 0; i < n; i++) {
-        printf("Process %d - Burst Time: ", i + 1);
-        scanf("%d", &bt[i]);
-        printf("Process %d - Priority: ", i + 1);
-        scanf("%d", &pr[i]);
-    }
+    int burst_time[n], priority[n], tat[n], wt[n];
 
-    findAverageTime(n, bt, pr);
+    printf("Enter burst times for %d processes: ", n);
+    for (i = 0; i < n; i++) scanf("%d", &burst_time[i]);
+
+    printf("Enter priorities for %d processes: ", n);
+    for (i = 0; i < n; i++) scanf("%d", &priority[i]);
+
+    findPriorityScheduling(n, burst_time, priority, tat, wt);
+    displayResults(n, tat, wt);
+
     return 0;
 }
 
