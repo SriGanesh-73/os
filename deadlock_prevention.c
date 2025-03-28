@@ -47,7 +47,7 @@ int main() {
     }
 
     for (int i = 0; i < NUM_RESOURCES; i++) {
-        pthread_mutex_destroy(&resource[i],NULL);
+        pthread_mutex_destroy(&resource[i]);
     }
 
     return 0;
