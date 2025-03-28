@@ -1,32 +1,34 @@
-#include <iostream>
+#include <stdio.h>
 #include <unistd.h>
+#include <sys/types.h>
 
 int main() {
     int pipefd[2];
+    pid_t pid;
+
     if (pipe(pipefd) == -1) {
-        std::cerr << "Pipe creation failed!" << std::endl;
+        perror("Pipe creation failed");
         return 1;
     }
 
-    pid_t pid = fork();
+    pid = fork();
     if (pid < 0) {
-        std::cerr << "Fork failed!" << std::endl;
+        perror("Fork failed");
         return 1;
     }
 
-    if (pid == 0) { 
-        close(pipefd[1]); 
-	char buffer[100];
+    if (pid == 0) { // Child process
+        close(pipefd[1]);
+        char buffer[100];
         read(pipefd[0], buffer, sizeof(buffer));
-        std::cout << "Child received: " << buffer << std::endl;
+        printf("Child received: %s\n", buffer);
         close(pipefd[0]);
-    } else { 
+    } else { // Parent process
         close(pipefd[0]);
-        const char* message = "Hello from parent!";
+        const char *message = "Hello from parent!";
         write(pipefd[1], message, sizeof(message));
         close(pipefd[1]);
     }
 
     return 0;
 }
-
