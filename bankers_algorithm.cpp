@@ -1,140 +1,153 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
-using namespace std;
-
-class BankersAlgorithm {
-    int processes, resources;
-    vector<vector<int>> allocation, max, need;
-    vector<int> available;
-
-public:
-    BankersAlgorithm(int p, int r) {
-        processes = p;
-        resources = r;
-
-        allocation.resize(p, vector<int>(r));
-        max.resize(p, vector<int>(r));
-        need.resize(p, vector<int>(r));
-        available.resize(r);
-
-        cout << "Enter the Allocation Matrix: \n";
-        for (int i = 0; i < processes; i++) {
-            for (int j = 0; j < resources; j++) {
-                cin >> allocation[i][j];
-            }
-        }
-
-        cout << "Enter the Max Matrix: \n";
-        for (int i = 0; i < processes; i++) {
-            for (int j = 0; j < resources; j++) {
-                cin >> max[i][j];
-            }
-        }
-
-        cout << "Enter the Available Resources: \n";
-        for (int i = 0; i < resources; i++) {
-            cin >> available[i];
-        }
-
-        for (int i = 0; i < processes; i++) {
-            for (int j = 0; j < resources; j++) {
-                need[i][j] = max[i][j] - allocation[i][j];
-            }
+void calculateNeed(int processes, int resources, int max[][resources], int allocation[][resources], int need[][resources]) {
+    for (int i = 0; i < processes; i++) {
+        for (int j = 0; j < resources; j++) {
+            need[i][j] = max[i][j] - allocation[i][j];
         }
     }
+}
 
-    bool isSafe() {
-        vector<bool> finish(processes, false);
-        vector<int> work = available;
-        int count = 0;
+bool isSafe(int processes, int resources, int allocation[][resources], int need[][resources], int available[]) {
+    bool finish[processes];
+    for (int i = 0; i < processes; i++) {
+        finish[i] = false;
+    }
 
-        while (count < processes) {
-            bool progressMade = false;
+    int work[resources];
+    for (int i = 0; i < resources; i++) {
+        work[i] = available[i];
+    }
 
-            for (int i = 0; i < processes; i++) {
-                if (!finish[i]) {
-                    bool canFinish = true;
+    int count = 0;
 
-                    for (int j = 0; j < resources; j++) {
-                        if (need[i][j] > work[j]) {
-                            canFinish = false;
-                            break;
-                        }
-                    }
+    while (count < processes) {
+        bool progressMade = false;
 
-                    if (canFinish) {
-                        for (int j = 0; j < resources; j++) {
-                            work[j] += allocation[i][j];
-                        }
+        for (int i = 0; i < processes; i++) {
+            if (!finish[i]) {
+                bool canFinish = true;
 
-                        finish[i] = true;
-                        count++;
-                        progressMade = true;
+                for (int j = 0; j < resources; j++) {
+                    if (need[i][j] > work[j]) {
+                        canFinish = false;
                         break;
                     }
                 }
-            }
 
-            if (!progressMade) {
-                return false;
-            }
-        }
-        return true;
-    }
+                if (canFinish) {
+                    for (int j = 0; j < resources; j++) {
+                        work[j] += allocation[i][j];
+                    }
 
-    void requestResources(int process, vector<int> request) {
-        for (int i = 0; i < resources; i++) {
-            if (request[i] > need[process][i]) {
-                cout << "Error: Process has exceeded maximum claim.\n";
-                return;
-            }
-            if (request[i] > available[i]) {
-                cout << "Resources are not available.\n";
-                return;
+                    finish[i] = true;
+                    count++;
+                    progressMade = true;
+                    break;
+                }
             }
         }
 
-        vector<int> originalAvailable = available;
-        vector<vector<int>> originalAllocation = allocation;
-        vector<vector<int>> originalNeed = need;
-
-        for (int i = 0; i < resources; i++) {
-            available[i] -= request[i];
-            allocation[process][i] += request[i];
-            need[process][i] -= request[i];
-        }
-
-        if (isSafe()) {
-            cout << "Request granted.\n";
-        } else {
-            cout << "Request denied.\n";
-            available = originalAvailable;
-            allocation = originalAllocation;
-            need = originalNeed;
+        if (!progressMade) {
+            return false;
         }
     }
-};
+
+    return true;
+}
+
+void requestResources(int processes, int resources, int allocation[][resources], int need[][resources], int available[], int process, int request[]) {
+    for (int i = 0; i < resources; i++) {
+        if (request[i] > need[process][i]) {
+            printf("Error: Process has exceeded maximum claim.\n");
+            return;
+        }
+        if (request[i] > available[i]) {
+            printf("Resources are not available.\n");
+            return;
+        }
+    }
+
+    int originalAvailable[resources];
+    int originalAllocation[processes][resources];
+    int originalNeed[processes][resources];
+
+    for (int i = 0; i < resources; i++) {
+        originalAvailable[i] = available[i];
+    }
+
+    for (int i = 0; i < processes; i++) {
+        for (int j = 0; j < resources; j++) {
+            originalAllocation[i][j] = allocation[i][j];
+            originalNeed[i][j] = need[i][j];
+        }
+    }
+
+    for (int i = 0; i < resources; i++) {
+        available[i] -= request[i];
+        allocation[process][i] += request[i];
+        need[process][i] -= request[i];
+    }
+
+    if (isSafe(processes, resources, allocation, need, available)) {
+        printf("Request granted.\n");
+    } else {
+        printf("Request denied.\n");
+        for (int i = 0; i < resources; i++) {
+            available[i] = originalAvailable[i];
+        }
+
+        for (int i = 0; i < processes; i++) {
+            for (int j = 0; j < resources; j++) {
+                allocation[i][j] = originalAllocation[i][j];
+                need[i][j] = originalNeed[i][j];
+            }
+        }
+    }
+}
 
 int main() {
-    int p, r;
-    cout << "Enter number of processes and resources: ";
-    cin >> p >> r;
+    int processes, resources;
+    printf("Enter number of processes and resources: ");
+    scanf("%d %d", &processes, &resources);
 
-    BankersAlgorithm ba(p, r);
+    int allocation[processes][resources];
+    int max[processes][resources];
+    int need[processes][resources];
+    int available[resources];
 
-    vector<int> request(r);
-    int process;
-
-    cout << "Enter process number and resource request: ";
-    cin >> process;
-    for (int i = 0; i < r; i++) {
-        cin >> request[i];
+    printf("Enter the Allocation Matrix:\n");
+    for (int i = 0; i < processes; i++) {
+        for (int j = 0; j < resources; j++) {
+            scanf("%d", &allocation[i][j]);
+        }
     }
 
-    ba.requestResources(process, request);
+    printf("Enter the Max Matrix:\n");
+    for (int i = 0; i < processes; i++) {
+        for (int j = 0; j < resources; j++) {
+            scanf("%d", &max[i][j]);
+        }
+    }
+
+    printf("Enter the Available Resources:\n");
+    for (int i = 0; i < resources; i++) {
+        scanf("%d", &available[i]);
+    }
+
+    calculateNeed(processes, resources, max, allocation, need);
+
+    int process;
+    int request[resources];
+    printf("Enter process number and resource request:\n");
+    scanf("%d", &process);
+    for (int i = 0; i < resources; i++) {
+        scanf("%d", &request[i]);
+    }
+
+    requestResources(processes, resources, allocation, need, available, process, request);
 
     return 0;
 }
-
