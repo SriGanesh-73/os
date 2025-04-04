@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <limits.h>
 
-void findSJFPreemptive(int n, int at[], int bt[], int tat[], int wt[]) {
+void findSJFPreemptive(int n, int at[], int bt[], int tat[], int wt[], int ct[]) {
     int rt[n], complete = 0, t = 0, minm = INT_MAX;
     int shortest = 0, finish_time;
     bool check = false;
@@ -32,6 +32,7 @@ void findSJFPreemptive(int n, int at[], int bt[], int tat[], int wt[]) {
             complete++;
             finish_time = t + 1;
             wt[shortest] = finish_time - bt[shortest] - at[shortest];
+            ct[shortest] = finish_time; // Calculate completion time
 
             if (wt[shortest] < 0)
                 wt[shortest] = 0;
@@ -43,11 +44,11 @@ void findSJFPreemptive(int n, int at[], int bt[], int tat[], int wt[]) {
         tat[i] = bt[i] + wt[i];
 }
 
-void displayResults(int n, int tat[], int wt[]) {
+void displayResults(int n, int tat[], int wt[], int ct[]) {
     int total_tat = 0, total_wt = 0;
-    printf("Process\tTurnaround Time\tWaiting Time\n");
+    printf("Process\tArrival Time\tBurst Time\tCompletion Time\tTurnaround Time\tWaiting Time\n");
     for (int i = 0; i < n; i++) {
-        printf("%d\t%d\t\t%d\n", i + 1, tat[i], wt[i]);
+        printf("%d\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n", i + 1, at[i], bt[i], ct[i], tat[i], wt[i]);
         total_tat += tat[i];
         total_wt += wt[i];
     }
@@ -60,7 +61,7 @@ int main() {
     printf("Enter the number of processes: ");
     scanf("%d", &n);
 
-    int at[n], bt[n], tat[n], wt[n];
+    int at[n], bt[n], tat[n], wt[n], ct[n];
 
     printf("Enter arrival times for %d processes: ", n);
     for (int i = 0; i < n; i++) {
@@ -72,9 +73,8 @@ int main() {
         scanf("%d", &bt[i]);
     }
 
-    findSJFPreemptive(n, at, bt, tat, wt);
-    displayResults(n, tat, wt);
+    findSJFPreemptive(n, at, bt, tat, wt, ct);
+    displayResults(n, tat, wt, ct);
 
     return 0;
 }
-

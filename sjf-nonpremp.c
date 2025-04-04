@@ -1,18 +1,27 @@
 #include <stdio.h>
 
-void findFCFS(int n, int bt[], int wt[], int tat[], int ct[]) {
-    int i;
+void findSJFNonPreemptive(int n, int bt[], int tat[], int wt[], int ct[]) {
+    int i, j, temp;
+    int p[n];
+
+    for (i = 0; i < n; i++) p[i] = i;
+
+    for (i = 0; i < n - 1; i++) {
+        for (j = i + 1; j < n; j++) {
+            if (bt[i] > bt[j]) {
+                temp = bt[i]; bt[i] = bt[j]; bt[j] = temp;
+                temp = p[i]; p[i] = p[j]; p[j] = temp;
+            }
+        }
+    }
+
     wt[0] = 0;
     ct[0] = bt[0];
-
     for (i = 1; i < n; i++) {
         wt[i] = wt[i - 1] + bt[i - 1];
         ct[i] = ct[i - 1] + bt[i];
     }
-
-    for (i = 0; i < n; i++) {
-        tat[i] = bt[i] + wt[i];
-    }
+    for (i = 0; i < n; i++) tat[i] = bt[i] + wt[i];
 }
 
 void displayResults(int n, int tat[], int wt[], int ct[]) {
@@ -32,14 +41,12 @@ int main() {
     printf("Enter the number of processes: ");
     scanf("%d", &n);
 
-    int burst_time[n], wt[n], tat[n], ct[n];
+    int burst_time[n], tat[n], wt[n], ct[n];
 
     printf("Enter burst times for %d processes: ", n);
-    for (i = 0; i < n; i++) {
-        scanf("%d", &burst_time[i]);
-    }
+    for (i = 0; i < n; i++) scanf("%d", &burst_time[i]);
 
-    findFCFS(n, burst_time, wt, tat, ct);
+    findSJFNonPreemptive(n, burst_time, tat, wt, ct);
     displayResults(n, tat, wt, ct);
 
     return 0;
